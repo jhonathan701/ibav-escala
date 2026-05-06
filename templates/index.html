@@ -5,157 +5,82 @@
 <title>IBAV Itaim Paulista</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Ícones -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-body {
-    background:#0f172a;
-    color:white;
-}
+body { background:#0f172a; color:white; }
 
 .card {
     background:#1e293b;
-    color:white;
     border-radius:15px;
-    transition:0.3s;
+    margin-bottom:15px;
 }
 
-.card:hover {
-    transform: scale(1.02);
-}
-
-/* BOTÕES */
-.btn-app {
-    border-radius:10px;
-    padding:6px 12px;
-    font-size:14px;
-    transition:0.2s;
-}
-
-.btn-app:hover {
-    transform: scale(1.1);
-}
-
-/* INPUT */
-input {
+input, button {
     border-radius:10px !important;
-}
-
-/* ANIMAÇÃO */
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity:0; transform:translateY(10px); }
-    to { opacity:1; transform:translateY(0); }
 }
 </style>
 </head>
 
 <body class="container py-4">
 
-<h2 class="text-center mb-4">
-    <i class="fa-solid fa-church"></i> IBAV Itaim Paulista
-</h2>
+<h2 class="text-center mb-4">📅 IBAV Itaim Paulista</h2>
+
+<!-- LOGIN -->
+{% if not admin %}
+<div class="card p-3">
+    <h5>Login Admin</h5>
+    <form action="/login" method="POST">
+        <input class="form-control mb-2" type="password" name="senha" placeholder="Senha">
+        <button class="btn btn-primary w-100">Entrar</button>
+    </form>
+</div>
+{% else %}
+<a href="/logout" class="btn btn-danger mb-3">Sair</a>
+{% endif %}
 
 <!-- FORM -->
-<div class="card p-3 mb-4 fade-in">
+{% if admin %}
+<div class="card p-3">
 <form method="POST">
-    <input class="form-control mb-2" name="data" placeholder="📅 Data" required>
-    <input class="form-control mb-2" name="lider" placeholder="👤 Líder" required>
-    <input class="form-control mb-2" name="funcao" placeholder="🎤 Função" required>
+    <input class="form-control mb-2" name="data" placeholder="Data" required>
+    <input class="form-control mb-2" name="lider" placeholder="Líder" required>
+    <input class="form-control mb-2" name="funcao" placeholder="Função" required>
 
-    <button class="btn btn-success w-100 btn-app">
-        <i class="fa-solid fa-plus"></i> Adicionar
-    </button>
+    <button class="btn btn-success w-100">Adicionar</button>
+</form>
+</div>
+{% endif %}
+
+<!-- BUSCAR -->
+<div class="card p-3">
+<form action="/buscar" method="POST">
+    <input class="form-control mb-2" name="data" placeholder="Buscar por data">
+    <button class="btn btn-info w-100">Buscar</button>
 </form>
 </div>
 
 <!-- LISTA -->
-{% for data, lista in escala.items() %}
-<div class="card p-3 mb-3 fade-in">
+<div class="card p-3">
+<h5>Escalas</h5>
 
-    <h5><i class="fa-solid fa-calendar-days"></i> {{ data }}</h5>
-
-    {% for pessoa in lista %}
-    <div class="d-flex justify-content-between align-items-center mb-2">
-
-        <span>
-            <i class="fa-solid fa-user"></i> {{ pessoa.lider }} -
-            <i class="fa-solid fa-microphone"></i> {{ pessoa.funcao }}
-        </span>
-
-        <div>
-
-            <!-- EDITAR -->
-            <button class="btn btn-warning btn-sm btn-app"
-                onclick="abrirModal('{{ data }}', '{{ loop.index0 }}', '{{ pessoa.lider }}', '{{ pessoa.funcao }}')">
-                <i class="fa-solid fa-pen"></i>
-            </button>
-
-            <!-- EXCLUIR -->
-            <form action="/remover" method="POST" style="display:inline;">
-                <input type="hidden" name="data" value="{{ data }}">
-                <input type="hidden" name="index" value="{{ loop.index0 }}">
-                <button class="btn btn-danger btn-sm btn-app">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </form>
-
-        </div>
-
+{% for pessoa in escala %}
+<div class="mb-2 d-flex justify-content-between">
+    <div>
+        <b>{{ pessoa.data }}</b><br>
+        {{ pessoa.lider }} - {{ pessoa.funcao }}
     </div>
-    {% endfor %}
 
+    {% if admin %}
+    <form action="/remover" method="POST">
+        <input type="hidden" name="id" value="{{ pessoa.id }}">
+        <button class="btn btn-danger">X</button>
+    </form>
+    {% endif %}
 </div>
 {% endfor %}
 
-<!-- MODAL EDITAR -->
-<div class="modal fade" id="modalEditar">
-  <div class="modal-dialog">
-    <form method="POST" action="/editar" class="modal-content bg-dark text-white">
-
-      <div class="modal-header">
-        <h5>✏️ Editar Escala</h5>
-      </div>
-
-      <div class="modal-body">
-
-        <input type="hidden" name="data" id="data">
-        <input type="hidden" name="index" id="index">
-
-        <input class="form-control mb-2" name="lider" id="lider">
-        <input class="form-control" name="funcao" id="funcao">
-
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-success w-100">Salvar</button>
-      </div>
-
-    </form>
-  </div>
 </div>
-
-<!-- JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-function abrirModal(data, index, lider, funcao) {
-    document.getElementById("data").value = data;
-    document.getElementById("index").value = index;
-    document.getElementById("lider").value = lider;
-    document.getElementById("funcao").value = funcao;
-
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-}
-</script>
 
 </body>
 </html>
