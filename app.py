@@ -1,69 +1,78 @@
-from flask import Flask, render_template, request, redirect
-import json
+from flask import Flask, render_template, request, redirect, session
+from supabase import create_client
 
 app = Flask(__name__)
+app.secret_key = "segredo123"
 
-def carregar():
-    try:
-        with open("escala.json", "r") as f:
-            return json.load(f)
-    except:
-        return {}
+# 🔥 CONFIG SUPABASE
+url = "https://jhxmstvwgpdthxzmehqg.supabase.co"
+key = "SUA_KEY_AQUI"  # 👉 cole sua publishable key aqui
 
-def salvar(dados):
-    with open("escala.json", "w") as f:
-        json.dump(dados, f, indent=4)
+supabase = create_client(url, key)
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    escala = carregar()
 
     if request.method == "POST":
+        if not session.get("admin"):
+            return redirect("/")
+
         data = request.form["data"]
         lider = request.form["lider"]
         funcao = request.form["funcao"]
 
-        if data not in escala:
-            escala[data] = []
-
-        escala[data].append({
+        supabase.table("escala").insert({
+            "data": data,
             "lider": lider,
             "funcao": funcao
-        })
+        }).execute()
 
-        salvar(escala)
         return redirect("/")
 
-    return render_template("index.html", escala=escala)
+    resultado = supabase.table("escala").select("*").execute()
+    escala = resultado.data
+
+    return render_template("index.html", escala=escala, admin=session.get("admin"))
+
+
+@app.route("/buscar", methods=["POST"])
+def buscar():
+    data = request.form["data"]
+
+    resultado = supabase.table("escala").select("*").eq("data", data).execute()
+    escala = resultado.data
+
+    return render_template("index.html", escala=escala, admin=session.get("admin"))
 
 
 @app.route("/remover", methods=["POST"])
 def remover():
-    escala = carregar()
+    if not session.get("admin"):
+        return redirect("/")
 
-    data = request.form["data"]
-    index = int(request.form["index"])
+    id = request.form["id"]
 
-    del escala[data][index]
+    supabase.table("escala").delete().eq("id", id).execute()
 
-    if len(escala[data]) == 0:
-        del escala[data]
-
-    salvar(escala)
     return redirect("/")
 
 
-@app.route("/editar", methods=["POST"])
-def editar():
-    escala = carregar()
+# 🔐 LOGIN
+@app.route("/login", methods=["POST"])
+def login():
+    senha = request.form["senha"]
 
-    data = request.form["data"]
-    index = int(request.form["index"])
+    if senha == "1234":
+        session["admin"] = True
 
-    escala[data][index]["lider"] = request.form["lider"]
-    escala[data][index]["funcao"] = request.form["funcao"]
+    return redirect("/")
 
-    salvar(escala)
+
+# 🚪 LOGOUT
+@app.route("/logout")
+def logout():
+    session.pop("admin", None)
     return redirect("/")
 
 
