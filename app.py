@@ -6,7 +6,7 @@ app.secret_key = "segredo123"
 
 # 🔥 CONFIG SUPABASE
 url = "https://jhxmstvwgpdthxzmehqg.supabase.co"
-key = "SUA_KEY_AQUI"  # 👉 cole sua publishable key aqui
+key = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR" 
 
 supabase = create_client(url, key)
 
