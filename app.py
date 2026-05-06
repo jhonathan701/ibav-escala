@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, redirect, session
-from supabase import create_client
+from supabase import create_client, Client
 
 app = Flask(__name__)
 app.secret_key = "segredo123"
 
 # 🔥 CONFIG SUPABASE
 url = "https://jhxmstvwgpdthxzmehqg.supabase.co"
-key = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR" 
+key = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 supabase = create_client(url, key)
 
