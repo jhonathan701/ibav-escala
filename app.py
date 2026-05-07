@@ -1,57 +1,28 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect
 import requests
 
 app = Flask(__name__)
-app.secret_key = "123"
 
-# 🔥 SUPABASE
-BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/escala"
+# SUPABASE
+BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
 
-# 🔑 SUA KEY
 KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 HEADERS = {
     "apikey": KEY,
     "Authorization": f"Bearer {KEY}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
 }
 
-# 🔥 CARREGAR DADOS
-def carregar():
-    resposta = requests.get(
-        BASE_URL,
-        headers=HEADERS
-    )
-
-    if resposta.status_code == 200:
-
-        dados = resposta.json()
-
-        escala = {}
-
-        for item in dados:
-
-            data = item["data"]
-
-            if data not in escala:
-                escala[data] = []
-
-            escala[data].append({
-                "lider": item["lider"],
-                "funcao": item["funcao"]
-            })
-
-        return escala
-
-    return {}
-
-# 🏠 HOME
+# HOME
 @app.route("/", methods=["GET", "POST"])
 def home():
 
+    # ADICIONAR
     if request.method == "POST":
 
-        nova_escala = {
+        dados = {
             "data": request.form["data"],
             "lider": request.form["lider"],
             "funcao": request.form["funcao"]
@@ -60,54 +31,49 @@ def home():
         requests.post(
             BASE_URL,
             headers=HEADERS,
-            json=nova_escala
+            json=dados
         )
 
         return redirect("/")
 
-    escala = carregar()
+    # BUSCAR
+    resposta = requests.get(
+        BASE_URL + "?select=*",
+        headers=HEADERS
+    )
 
-    busca = request.args.get("busca")
-
-    if busca:
-        escala_filtrada = {}
-
-        for data, lista in escala.items():
-            if busca.lower() in data.lower():
-                escala_filtrada[data] = lista
-
-        escala = escala_filtrada
+    escala = resposta.json()
 
     return render_template("index.html", escala=escala)
 
-# ❌ REMOVER
+# REMOVER
 @app.route("/remover", methods=["POST"])
 def remover():
 
-    item_id = request.form["id"]
+    id = request.form["id"]
 
     requests.delete(
-        f"{BASE_URL}?id=eq.{item_id}",
+        BASE_URL + f"?id=eq.{id}",
         headers=HEADERS
     )
 
     return redirect("/")
 
-# ✏️ EDITAR
+# EDITAR
 @app.route("/editar", methods=["POST"])
 def editar():
 
-    item_id = request.form["id"]
+    id = request.form["id"]
 
-    novos_dados = {
+    dados = {
         "lider": request.form["lider"],
         "funcao": request.form["funcao"]
     }
 
     requests.patch(
-        f"{BASE_URL}?id=eq.{item_id}",
+        BASE_URL + f"?id=eq.{id}",
         headers=HEADERS,
-        json=novos_dados
+        json=dados
     )
 
     return redirect("/")
