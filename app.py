@@ -1,20 +1,29 @@
 from flask import Flask, render_template, request, redirect, session
-from supabase import create_client, Client
+import requests
 
 app = Flask(__name__)
-app.secret_key = "segredo123"
+app.secret_key = "123"
 
-# 🔥 CONFIG SUPABASE
-url = "https://jhxmstvwgpdthxzmehqg.supabase.co"
-key = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
+# 🔥 SUPABASE
+BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/escala"
 
-supabase = create_client(url, key)
+# 👇 COLE SUA KEY AQUI
+KEY = "SUA_KEY_AQUI"
+
+HEADERS = {
+    "apikey": KEY,
+    "Authorization": f"Bearer {KEY}",
+    "Content-Type": "application/json"
+}
 
 
+# 🏠 HOME
 @app.route("/", methods=["GET", "POST"])
 def home():
 
+    # ADICIONAR
     if request.method == "POST":
+
         if not session.get("admin"):
             return redirect("/")
 
@@ -22,45 +31,37 @@ def home():
         lider = request.form["lider"]
         funcao = request.form["funcao"]
 
-        supabase.table("escala").insert({
-            "data": data,
-            "lider": lider,
-            "funcao": funcao
-        }).execute()
+        requests.post(
+            BASE_URL,
+            headers=HEADERS,
+            json={
+                "data": data,
+                "lider": lider,
+                "funcao": funcao
+            }
+        )
 
         return redirect("/")
 
-    resultado = supabase.table("escala").select("*").execute()
-    escala = resultado.data
+    # LISTAR
+    response = requests.get(BASE_URL, headers=HEADERS)
 
-    return render_template("index.html", escala=escala, admin=session.get("admin"))
+    if response.status_code == 200:
+        escala = response.json()
+    else:
+        escala = []
 
-
-@app.route("/buscar", methods=["POST"])
-def buscar():
-    data = request.form["data"]
-
-    resultado = supabase.table("escala").select("*").eq("data", data).execute()
-    escala = resultado.data
-
-    return render_template("index.html", escala=escala, admin=session.get("admin"))
-
-
-@app.route("/remover", methods=["POST"])
-def remover():
-    if not session.get("admin"):
-        return redirect("/")
-
-    id = request.form["id"]
-
-    supabase.table("escala").delete().eq("id", id).execute()
-
-    return redirect("/")
+    return render_template(
+        "index.html",
+        escala=escala,
+        admin=session.get("admin")
+    )
 
 
 # 🔐 LOGIN
 @app.route("/login", methods=["POST"])
 def login():
+
     senha = request.form["senha"]
 
     if senha == "1234":
@@ -72,9 +73,12 @@ def login():
 # 🚪 LOGOUT
 @app.route("/logout")
 def logout():
+
     session.pop("admin", None)
+
     return redirect("/")
 
 
+# ▶️ START
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
