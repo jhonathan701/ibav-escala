@@ -7,7 +7,7 @@ app.secret_key = "123"
 # 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/escala"
 
-# 👇 SUA KEY
+# 🔑 SUA KEY
 KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 HEADERS = {
@@ -16,79 +16,101 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
+# 🔥 CARREGAR DADOS
+def carregar():
+    resposta = requests.get(
+        BASE_URL,
+        headers=HEADERS
+    )
+
+    if resposta.status_code == 200:
+
+        dados = resposta.json()
+
+        escala = {}
+
+        for item in dados:
+
+            data = item["data"]
+
+            if data not in escala:
+                escala[data] = []
+
+            escala[data].append({
+                "lider": item["lider"],
+                "funcao": item["funcao"]
+            })
+
+        return escala
+
+    return {}
 
 # 🏠 HOME
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    # ADICIONAR
     if request.method == "POST":
 
-        if not session.get("admin"):
-            return redirect("/")
-
-        data = request.form["data"]
-        lider = request.form["lider"]
-        funcao = request.form["funcao"]
+        nova_escala = {
+            "data": request.form["data"],
+            "lider": request.form["lider"],
+            "funcao": request.form["funcao"]
+        }
 
         requests.post(
             BASE_URL,
             headers=HEADERS,
-            json={
-                "data": data,
-                "lider": lider,
-                "funcao": funcao
-            }
+            json=nova_escala
         )
 
         return redirect("/")
 
-    # 🔍 BUSCAR
-    buscar = request.args.get("buscar")
+    escala = carregar()
 
-    response = requests.get(BASE_URL, headers=HEADERS)
+    busca = request.args.get("busca")
 
-    if response.status_code == 200:
+    if busca:
+        escala_filtrada = {}
 
-        escala = response.json()
+        for data, lista in escala.items():
+            if busca.lower() in data.lower():
+                escala_filtrada[data] = lista
 
-        if buscar:
-            escala = [
-                item for item in escala
-                if buscar.lower() in item["data"].lower()
-            ]
+        escala = escala_filtrada
 
-    else:
-        escala = []
+    return render_template("index.html", escala=escala)
 
-    return render_template(
-        "index.html",
-        escala=escala,
-        admin=session.get("admin")
+# ❌ REMOVER
+@app.route("/remover", methods=["POST"])
+def remover():
+
+    item_id = request.form["id"]
+
+    requests.delete(
+        f"{BASE_URL}?id=eq.{item_id}",
+        headers=HEADERS
     )
 
+    return redirect("/")
 
-# 🔐 LOGIN
-@app.route("/login", methods=["POST"])
-def login():
+# ✏️ EDITAR
+@app.route("/editar", methods=["POST"])
+def editar():
 
-    senha = request.form["senha"]
+    item_id = request.form["id"]
 
-    if senha == "1234":
-        session["admin"] = True
+    novos_dados = {
+        "lider": request.form["lider"],
+        "funcao": request.form["funcao"]
+    }
+
+    requests.patch(
+        f"{BASE_URL}?id=eq.{item_id}",
+        headers=HEADERS,
+        json=novos_dados
+    )
 
     return redirect("/")
 
-
-# 🚪 LOGOUT
-@app.route("/logout")
-def logout():
-
-    session.pop("admin", None)
-
-    return redirect("/")
-
-
-# ▶️ START
 if __name__ == "__main__":
     app.run(debug=True)
