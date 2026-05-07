@@ -7,7 +7,7 @@ app.secret_key = "123"
 # 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/escala"
 
-# 👇 COLE SUA KEY AQUI
+# 👇 SUA KEY
 KEY = "SUA_KEY_AQUI"
 
 HEADERS = {
@@ -43,11 +43,21 @@ def home():
 
         return redirect("/")
 
-    # LISTAR
+    # 🔍 BUSCAR
+    buscar = request.args.get("buscar")
+
     response = requests.get(BASE_URL, headers=HEADERS)
 
     if response.status_code == 200:
+
         escala = response.json()
+
+        if buscar:
+            escala = [
+                item for item in escala
+                if buscar.lower() in item["data"].lower()
+            ]
+
     else:
         escala = []
 
