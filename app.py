@@ -8,7 +8,7 @@ app.secret_key = "123"
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/escala"
 
 # 👇 SUA KEY
-KEY = "SUA_KEY_AQUI"
+KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 HEADERS = {
     "apikey": KEY,
