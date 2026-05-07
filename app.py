@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-# SUPABASE
+# 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
 
 KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
@@ -11,15 +11,15 @@ KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 HEADERS = {
     "apikey": KEY,
     "Authorization": f"Bearer {KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
+    "Content-Type": "application/json"
 }
+
 
 # HOME
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    # ADICIONAR
+    # ADICIONAR ESCALA
     if request.method == "POST":
 
         dados = {
@@ -36,7 +36,9 @@ def home():
 
         return redirect("/")
 
-    # BUSCAR
+    # BUSCA
+    busca = request.args.get("busca", "").lower()
+
     resposta = requests.get(
         BASE_URL + "?select=*",
         headers=HEADERS
@@ -44,26 +46,36 @@ def home():
 
     escala = resposta.json()
 
-    return render_template("index.html", escala=escala)
+    # FILTRO
+    if busca:
+
+        escala = [
+            item for item in escala
+            if busca in item["data"].lower()
+            or busca in item["lider"].lower()
+        ]
+
+    return render_template(
+        "index.html",
+        escala=escala
+    )
+
 
 # REMOVER
-@app.route("/remover", methods=["POST"])
-def remover():
-
-    id = request.form["id"]
+@app.route("/remover/<int:id>")
+def remover(id):
 
     requests.delete(
-        BASE_URL + f"?id=eq.{id}",
+        f"{BASE_URL}?id=eq.{id}",
         headers=HEADERS
     )
 
     return redirect("/")
 
-# EDITAR
-@app.route("/editar", methods=["POST"])
-def editar():
 
-    id = request.form["id"]
+# EDITAR
+@app.route("/editar/<int:id>", methods=["POST"])
+def editar(id):
 
     dados = {
         "lider": request.form["lider"],
@@ -71,12 +83,13 @@ def editar():
     }
 
     requests.patch(
-        BASE_URL + f"?id=eq.{id}",
+        f"{BASE_URL}?id=eq.{id}",
         headers=HEADERS,
         json=dados
     )
 
     return redirect("/")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
