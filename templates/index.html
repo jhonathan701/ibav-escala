@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>IBAV Itaim Paulista</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Ícones -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 
@@ -20,28 +20,44 @@ body{
 
 .card{
     background:#1e293b;
-    border-radius:15px;
     color:white;
+    border-radius:15px;
+    transition:0.3s;
 }
 
-input{
-    border-radius:10px !important;
+.card:hover{
+    transform:scale(1.02);
 }
 
 .btn-app{
     border-radius:10px;
 }
 
-</style>
+input{
+    border-radius:10px !important;
+}
 
+</style>
 </head>
 
 <body class="container py-4">
 
 <h2 class="text-center mb-4">
-<i class="fa-solid fa-church"></i>
-IBAV Itaim Paulista
+    <i class="fa-solid fa-church"></i>
+    IBAV Itaim Paulista
 </h2>
+
+<!-- BUSCA -->
+<div class="mb-4">
+
+<input
+type="text"
+id="buscar"
+class="form-control"
+placeholder="🔍 Buscar por data ou nome..."
+onkeyup="filtrarEscalas()">
+
+</div>
 
 <!-- FORM -->
 <div class="card p-3 mb-4">
@@ -67,59 +83,45 @@ placeholder="🎤 Função"
 required>
 
 <button class="btn btn-success w-100 btn-app">
+<i class="fa-solid fa-plus"></i>
 Adicionar
+</button>
+
+</form>
+</div>
+
+<!-- LISTA -->
+{% for item in escala %}
+
+<div class="card p-3 mb-3 escala-card">
+
+<h5>
+<i class="fa-solid fa-calendar-days"></i>
+{{ item.data }}
+</h5>
+
+<div class="d-flex justify-content-between align-items-center">
+
+<div>
+<i class="fa-solid fa-user"></i>
+{{ item.lider }}
+-
+<i class="fa-solid fa-microphone"></i>
+{{ item.funcao }}
+</div>
+
+<div>
+
+<!-- EXCLUIR -->
+<form action="/remover/{{ item.id }}" method="POST" style="display:inline;">
+
+<button class="btn btn-danger btn-sm btn-app">
+<i class="fa-solid fa-trash"></i>
 </button>
 
 </form>
 
 </div>
-
-<!-- LISTA -->
-
-{% if escala %}
-
-{% for pessoa in escala %}
-
-<div class="card p-3 mb-3">
-
-<h5>
-📅 {{ pessoa.data }}
-</h5>
-
-<p>
-👤 {{ pessoa.lider }}
-</p>
-
-<p>
-🎤 {{ pessoa.funcao }}
-</p>
-
-<div class="d-flex gap-2">
-
-<!-- REMOVER -->
-<form action="/remover" method="POST">
-
-<input
-type="hidden"
-name="id"
-value="{{ pessoa.id }}">
-
-<button class="btn btn-danger btn-sm">
-Excluir
-</button>
-
-</form>
-
-<!-- EDITAR -->
-<button
-class="btn btn-warning btn-sm"
-onclick="abrirModal(
-'{{ pessoa.id }}',
-'{{ pessoa.lider }}',
-'{{ pessoa.funcao }}'
-)">
-Editar
-</button>
 
 </div>
 
@@ -127,73 +129,25 @@ Editar
 
 {% endfor %}
 
-{% else %}
-
-<div class="card p-3 text-center">
-Nenhuma escala cadastrada
-</div>
-
-{% endif %}
-
-<!-- MODAL -->
-<div class="modal fade" id="modalEditar">
-
-<div class="modal-dialog">
-
-<form
-method="POST"
-action="/editar"
-class="modal-content bg-dark text-white">
-
-<div class="modal-header">
-<h5>Editar Escala</h5>
-</div>
-
-<div class="modal-body">
-
-<input type="hidden" name="id" id="id">
-
-<input
-class="form-control mb-2"
-name="lider"
-id="lider">
-
-<input
-class="form-control"
-name="funcao"
-id="funcao">
-
-</div>
-
-<div class="modal-footer">
-
-<button class="btn btn-success w-100">
-Salvar
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 
-function abrirModal(id, lider, funcao){
+function filtrarEscalas(){
 
-document.getElementById("id").value = id;
-document.getElementById("lider").value = lider;
-document.getElementById("funcao").value = funcao;
+let input = document.getElementById("buscar").value.toLowerCase();
 
-var modal = new bootstrap.Modal(
-document.getElementById('modalEditar')
-);
+let cards = document.querySelectorAll(".escala-card");
 
-modal.show();
+cards.forEach(card => {
+
+let texto = card.innerText.toLowerCase();
+
+if(texto.includes(input)){
+card.style.display = "block";
+}else{
+card.style.display = "none";
+}
+
+});
 
 }
 
