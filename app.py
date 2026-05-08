@@ -1,12 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import requests
-import os
 
 app = Flask(__name__)
-
-# 📁 PASTA UPLOADS
-UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
@@ -116,27 +111,15 @@ def anexar():
 
         nome_arquivo = arquivo.filename
 
-        caminho = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            nome_arquivo
-        )
+        # 🔥 ENVIAR PARA STORAGE SUPABASE
+        upload_url = "https://jhxmstvwgpdthxzmehqg.supabase.co/storage/v1/object/anexos/" + nome_arquivo
 
-        arquivo.save(caminho)
+        headers_upload = {
+            "apikey": KEY,
+            "Authorization": f"Bearer {KEY}",
+            "Content-Type": arquivo.content_type
+        }
 
-    dados = {
-        "titulo": request.form["titulo"],
-        "descricao": request.form["descricao"],
-        "data": request.form["data"],
-        "arquivo": nome_arquivo
-    }
-
-    requests.post(
-        ANEXOS_URL,
-        headers=HEADERS,
-        json=dados
-    )
-
-    return redirect("/")
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        requests.post(
+            upload_url,
+            headers=headers_upload,
