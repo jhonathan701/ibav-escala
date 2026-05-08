@@ -11,8 +11,10 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 # 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
 
+ANEXOS_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ANEXOS"
+
 # 🔑 KEY
-KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
+KEY = "COLE_SUA_KEY_AQUI"
 
 HEADERS = {
     "apikey": KEY,
@@ -24,29 +26,13 @@ HEADERS = {
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    # ➕ ADICIONAR
+    # ➕ ADICIONAR ESCALA
     if request.method == "POST":
-
-        arquivo = request.files.get("anexo")
-
-        nome_arquivo = ""
-
-        if arquivo and arquivo.filename != "":
-
-            nome_arquivo = arquivo.filename
-
-            caminho = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                nome_arquivo
-            )
-
-            arquivo.save(caminho)
 
         dados = {
             "data": request.form["data"],
             "lider": request.form["lider"],
-            "funcao": request.form["funcao"],
-            "anexo": nome_arquivo
+            "funcao": request.form["funcao"]
         }
 
         requests.post(
@@ -57,7 +43,7 @@ def home():
 
         return redirect("/")
 
-    # 🔍 BUSCA
+    # 🔍 BUSCA ESCALA
     busca = request.args.get("busca", "").lower()
 
     resposta = requests.get(
@@ -76,12 +62,21 @@ def home():
             or busca in item["lider"].lower()
         ]
 
-    return render_template(
-        "index.html",
-        escala=escala
+    # 📎 BUSCAR ANEXOS
+    resposta_anexos = requests.get(
+        ANEXOS_URL + "?select=*",
+        headers=HEADERS
     )
 
-# ❌ REMOVER
+    anexos = resposta_anexos.json()
+
+    return render_template(
+        "index.html",
+        escala=escala,
+        anexos=anexos
+    )
+
+# ❌ REMOVER ESCALA
 @app.route("/remover/<int:id>")
 def remover(id):
 
@@ -92,7 +87,7 @@ def remover(id):
 
     return redirect("/")
 
-# ✏️ EDITAR
+# ✏️ EDITAR ESCALA
 @app.route("/editar/<int:id>", methods=["POST"])
 def editar(id):
 
@@ -103,6 +98,40 @@ def editar(id):
 
     requests.patch(
         f"{BASE_URL}?id=eq.{id}",
+        headers=HEADERS,
+        json=dados
+    )
+
+    return redirect("/")
+
+# 📎 ADICIONAR ANEXO
+@app.route("/anexar", methods=["POST"])
+def anexar():
+
+    arquivo = request.files.get("arquivo")
+
+    nome_arquivo = ""
+
+    if arquivo and arquivo.filename != "":
+
+        nome_arquivo = arquivo.filename
+
+        caminho = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            nome_arquivo
+        )
+
+        arquivo.save(caminho)
+
+    dados = {
+        "titulo": request.form["titulo"],
+        "descricao": request.form["descricao"],
+        "data": request.form["data"],
+        "arquivo": nome_arquivo
+    }
+
+    requests.post(
+        ANEXOS_URL,
         headers=HEADERS,
         json=dados
     )
