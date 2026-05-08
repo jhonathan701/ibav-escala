@@ -112,7 +112,7 @@ def anexar():
         nome_arquivo = arquivo.filename
 
         # 🔥 ENVIAR PARA STORAGE SUPABASE
-        upload_url = "https://jhxmstvwgpdthxzmehqg.supabase.co/storage/v1/object/anexos/" + nome_arquivo
+        upload_url = "https://jhxmstvwgpdthxzmehqg.supabase.co/storage/v1/object/anexos/" + nome_arquivo + "?upsert=true"
 
         headers_upload = {
             "apikey": KEY,
