@@ -32,7 +32,7 @@ body{
     border-radius:10px;
 }
 
-input{
+input, textarea{
     border-radius:10px !important;
 }
 
@@ -51,7 +51,7 @@ img{
 IBAV Itaim Paulista
 </h2>
 
-<!-- 🔍 BUSCA -->
+<!-- 🔍 BUSCAR ESCALA -->
 <form method="GET" class="mb-3">
 
 <div class="input-group">
@@ -60,7 +60,7 @@ IBAV Itaim Paulista
 type="text"
 name="busca"
 class="form-control"
-placeholder="🔎 Buscar por data ou nome">
+placeholder="🔎 Buscar escala por data ou nome">
 
 <button class="btn btn-primary">
 <i class="fa-solid fa-search"></i>
@@ -70,10 +70,14 @@ placeholder="🔎 Buscar por data ou nome">
 
 </form>
 
-<!-- ➕ FORM -->
+<!-- ➕ ESCALA -->
 <div class="card p-3 mb-4">
 
-<form method="POST" enctype="multipart/form-data">
+<h4 class="mb-3">
+📅 Adicionar Escala
+</h4>
+
+<form method="POST">
 
 <input
 class="form-control mb-2"
@@ -88,88 +92,99 @@ placeholder="👤 Líder"
 required>
 
 <input
-class="form-control mb-2"
+class="form-control mb-3"
 name="funcao"
 placeholder="🎤 Função"
 required>
 
-<!-- 📎 ANEXO -->
-<input
-type="file"
-name="anexo"
-class="form-control mb-3">
-
 <button class="btn btn-success w-100 btn-app">
+
 <i class="fa-solid fa-plus"></i>
-Adicionar
+Adicionar Escala
+
 </button>
 
 </form>
 
 </div>
 
-<!-- 📋 LISTA -->
+<!-- 📎 CENTRAL DE ANEXOS -->
+<div class="card p-3 mb-4">
+
+<h4 class="mb-3">
+📎 Central de Arquivos
+</h4>
+
+<form
+method="POST"
+action="/anexar"
+enctype="multipart/form-data">
+
+<input
+class="form-control mb-2"
+name="titulo"
+placeholder="📌 Título"
+required>
+
+<textarea
+class="form-control mb-2"
+name="descricao"
+placeholder="📝 Descrição"
+required></textarea>
+
+<input
+class="form-control mb-2"
+name="data"
+placeholder="📅 Data">
+
+<input
+type="file"
+name="arquivo"
+class="form-control mb-3"
+required>
+
+<button class="btn btn-info w-100">
+
+<i class="fa-solid fa-paperclip"></i>
+Enviar Anexo
+
+</button>
+
+</form>
+
+</div>
+
+<!-- 📋 ESCALAS -->
+<h3 class="mb-3">
+📅 Escalas
+</h3>
+
 {% for pessoa in escala %}
 
 <div class="card p-3 mb-3">
 
 <h5>
+
 <i class="fa-solid fa-calendar-days"></i>
 {{ pessoa.data }}
+
 </h5>
 
 <p>
+
 <i class="fa-solid fa-user"></i>
 {{ pessoa.lider }}
+
 </p>
 
 <p>
+
 <i class="fa-solid fa-microphone"></i>
 {{ pessoa.funcao }}
+
 </p>
 
-<!-- 📎 ANEXO -->
-{% if pessoa.anexo %}
-
-<div class="mt-2">
-
-<a
-href="{{ url_for('static', filename='uploads/' + pessoa.anexo) }}"
-target="_blank"
-class="btn btn-info btn-sm">
-
-<i class="fa-solid fa-eye"></i>
-Ver Anexo
-
-</a>
-
-<a
-href="{{ url_for('static', filename='uploads/' + pessoa.anexo) }}"
-download
-class="btn btn-secondary btn-sm">
-
-<i class="fa-solid fa-download"></i>
-Baixar
-
-</a>
-
-</div>
-
-<!-- 🖼️ MOSTRAR IMAGEM -->
-{% if pessoa.anexo.endswith('.png')
-or pessoa.anexo.endswith('.jpg')
-or pessoa.anexo.endswith('.jpeg')
-or pessoa.anexo.endswith('.webp') %}
-
-<img
-src="{{ url_for('static', filename='uploads/' + pessoa.anexo) }}"
-class="img-fluid mt-3">
-
-{% endif %}
-
-{% endif %}
-
-<div class="d-flex gap-2 mt-3">
+<div class="d-flex gap-2 mt-2">
 
 <!-- ✏️ EDITAR -->
 <button
@@ -234,6 +249,61 @@ Salvar
 </div>
 
 </div>
+
+</div>
+
+{% endfor %}
+
+<!-- 📎 LISTA ANEXOS -->
+<h3 class="mb-3 mt-5">
+📎 Arquivos e Avisos
+</h3>
+
+{% for anexo in anexos %}
+
+<div class="card p-3 mb-3">
+
+<h5>
+📌 {{ anexo.titulo }}
+</h5>
+
+<p>
+📝 {{ anexo.descricao }}
+</p>
+
+<p>
+📅 {{ anexo.data }}
+</p>
+
+<a
+href="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+target="_blank"
+class="btn btn-info btn-sm mb-2">
+
+👁 Ver Arquivo
+
+</a>
+
+<a
+href="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+download
+class="btn btn-secondary btn-sm">
+
+⬇️ Baixar
+
+</a>
+
+<!-- 🖼️ MOSTRAR IMAGEM -->
+{% if anexo.arquivo.endswith('.png')
+or anexo.arquivo.endswith('.jpg')
+or anexo.arquivo.endswith('.jpeg')
+or anexo.arquivo.endswith('.webp') %}
+
+<img
+src="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+class="img-fluid mt-3">
+
+{% endif %}
 
 </div>
 
