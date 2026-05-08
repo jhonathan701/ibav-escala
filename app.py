@@ -14,7 +14,7 @@ BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
 ANEXOS_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ANEXOS"
 
 # 🔑 KEY
-KEY = "COLE_SUA_KEY_AQUI"
+KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 HEADERS = {
     "apikey": KEY,
