@@ -1,11 +1,17 @@
 from flask import Flask, render_template, request, redirect
 import requests
+import os
 
 app = Flask(__name__)
+
+# 📁 PASTA UPLOADS
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # 🔥 SUPABASE
 BASE_URL = "https://jhxmstvwgpdthxzmehqg.supabase.co/rest/v1/ESCALA"
 
+# 🔑 KEY
 KEY = "sb_publishable_PxE3jfK1no41uW0a0DiTLA_ghKc5gBR"
 
 HEADERS = {
@@ -14,18 +20,33 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-
-# HOME
+# 🏠 HOME
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    # ADICIONAR ESCALA
+    # ➕ ADICIONAR
     if request.method == "POST":
+
+        arquivo = request.files.get("anexo")
+
+        nome_arquivo = ""
+
+        if arquivo and arquivo.filename != "":
+
+            nome_arquivo = arquivo.filename
+
+            caminho = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                nome_arquivo
+            )
+
+            arquivo.save(caminho)
 
         dados = {
             "data": request.form["data"],
             "lider": request.form["lider"],
-            "funcao": request.form["funcao"]
+            "funcao": request.form["funcao"],
+            "anexo": nome_arquivo
         }
 
         requests.post(
@@ -36,7 +57,7 @@ def home():
 
         return redirect("/")
 
-    # BUSCA
+    # 🔍 BUSCA
     busca = request.args.get("busca", "").lower()
 
     resposta = requests.get(
@@ -46,7 +67,7 @@ def home():
 
     escala = resposta.json()
 
-    # FILTRO
+    # 🔎 FILTRO
     if busca:
 
         escala = [
@@ -60,8 +81,7 @@ def home():
         escala=escala
     )
 
-
-# REMOVER
+# ❌ REMOVER
 @app.route("/remover/<int:id>")
 def remover(id):
 
@@ -72,8 +92,7 @@ def remover(id):
 
     return redirect("/")
 
-
-# EDITAR
+# ✏️ EDITAR
 @app.route("/editar/<int:id>", methods=["POST"])
 def editar(id):
 
@@ -89,7 +108,6 @@ def editar(id):
     )
 
     return redirect("/")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
