@@ -276,7 +276,7 @@ Salvar
 </p>
 
 <a
-href="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+href="{{ anexo.arquivo }}"
 target="_blank"
 class="btn btn-info btn-sm mb-2">
 
@@ -285,7 +285,7 @@ class="btn btn-info btn-sm mb-2">
 </a>
 
 <a
-href="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+href="{{ anexo.arquivo }}"
 download
 class="btn btn-secondary btn-sm">
 
@@ -300,7 +300,7 @@ or anexo.arquivo.endswith('.jpeg')
 or anexo.arquivo.endswith('.webp') %}
 
 <img
-src="{{ url_for('static', filename='uploads/' + anexo.arquivo) }}"
+src="{{ anexo.arquivo }}"
 class="img-fluid mt-3">
 
 {% endif %}
